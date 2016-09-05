@@ -3,7 +3,7 @@
 //  Stdinout.h - connect various character devices to standard streams
 //  Copyright (c) 2014, 2016 Roger A. Krupski <rakrupski@verizon.net>
 //
-//  Last update: 26 January 2016
+//  Last update: 03 August 2016
 //
 //  This library is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by

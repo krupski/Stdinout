@@ -3,7 +3,7 @@
 //  Stdinout.cpp - connect various character devices to standard streams
 //  Copyright (c) 2014, 2016 Roger A. Krupski <rakrupski@verizon.net>
 //
-//  Last update: 26 January 2016
+//  Last update: 03 August 2016
 //
 //  This library is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -71,19 +71,19 @@ Stream &STDINOUT::getStream (FILE *fp)
 // disconnect stdio from stream(s)
 void STDINOUT::close (void)
 {
-	if (stream_ptr2) { // close stderr
+	if (stderr != NULL) { // close stderr
 		fclose (stderr);
 		stderr = NULL;
 		stream_ptr2 = NULL;
 	}
 
-	if (stream_ptr1) { // close stdout
+	if (stdout != NULL) { // close stdout
 		fclose (stdout);
 		stdout = NULL;
 		stream_ptr1 = NULL;
 	}
 
-	if (stream_ptr0) { // close stdin
+	if (stdin != NULL) { // close stdin
 		fclose (stdin);
 		stdin = NULL;
 		stream_ptr0 = NULL;
