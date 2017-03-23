@@ -22,6 +22,10 @@
 
 #include <Stdinout.h>
 
+static Stream *stream_ptr0 = NULL; // stdin stream pointer
+static Stream *stream_ptr1 = NULL; // stdout stream pointer
+static Stream *stream_ptr2 = NULL; // stderr stream pointer
+
 // connect stdio to all devices
 void STDINOUT::open (Stream &iostr)
 {
@@ -37,21 +41,43 @@ void STDINOUT::open (Stream &inpstr, Stream &outstr)
 // connect each stream to it's own device
 void STDINOUT::open (Stream &inpstr, Stream &outstr, Stream &errstr)
 {
-	close(); // close any that may be open
+	close();  // close any that may be open
 
-	if (&inpstr) { // open stdin
+	if (stdin == NULL) { // open stdin
 		stdin = fdevopen (NULL, getchar0);
 		stream_ptr0 = &inpstr;
 	}
 
-	if (&outstr) { // open stdout
+	if (stdout == NULL) { // open stdout
 		stdout = fdevopen (putchar1, NULL);
 		stream_ptr1 = &outstr;
 	}
 
-	if (&errstr) { // open stderr
+	if (stderr == NULL) { // open stderr
 		stderr = fdevopen (putchar2, NULL);
 		stream_ptr2 = &errstr;
+	}
+}
+
+// disconnect stdio from stream(s)
+void STDINOUT::close (void)
+{
+	if (stderr) { // close stderr
+		fclose (stderr);
+		stderr = NULL;
+		stream_ptr2 = NULL;
+	}
+
+	if (stdout) { // close stdout
+		fclose (stdout);
+		stdout = NULL;
+		stream_ptr1 = NULL;
+	}
+
+	if (stdin) { // close stdin
+		fclose (stdin);
+		stdin = NULL;
+		stream_ptr0 = NULL;
 	}
 }
 
@@ -60,63 +86,59 @@ Stream &STDINOUT::getStream (FILE *fp)
 {
 	FILE *f[] = { NULL, stdin, stdout, stderr }; // file pointers
 	Stream *s[] = { NULL, stream_ptr0, stream_ptr1, stream_ptr2 }; // stream pointers
-	uint8_t x = (sizeof (f) / sizeof (*f)); // pointer count
+	int8_t x = (sizeof (f) / sizeof (*f)); // pointer count
+
 	while (x--) { // scan through them
 		if (f[x] == fp) { // if stdio matches...
-			return *s[x]; // ...return it's pointer
+			break; // ...return it's pointer
 		}
 	}
+	if (x < 0) {
+		x = 0; // found nothing, return NULL
+	}
+	return *s[x]; // if the loop finishes, return null
 }
 
-// disconnect stdio from stream(s)
-void STDINOUT::close (void)
-{
-	if (stderr != NULL) { // close stderr
-		fclose (stderr);
-		stderr = NULL;
-		stream_ptr2 = NULL;
-	}
-
-	if (stdout != NULL) { // close stdout
-		fclose (stdout);
-		stdout = NULL;
-		stream_ptr1 = NULL;
-	}
-
-	if (stdin != NULL) { // close stdin
-		fclose (stdin);
-		stdin = NULL;
-		stream_ptr0 = NULL;
-	}
-}
-
-// Function that scanf and related will use to read a char from stdin
+// Function that fgetc, fread, scanf and related
+// will use to read a char from stdin
 int STDINOUT::getchar0 (FILE *fp)
 {
-	while (! (stream_ptr0->available())); // wait until a character is available...
-	return (stream_ptr0->read()); // ...then grab it and return
+	if (fp == stdin) {
+		while (! (stream_ptr0->available()));  // wait until a character is available...
+		return (stream_ptr0->read());  // ...then grab it and return
+	} else {
+		return _FDEV_ERR;
+	}
 }
 
-// function that printf and related will use to write a char to stdout
-// auto-add a CR to a LF
+// function that printf and related will use to write
+// a char to stdout and auto-add a CR to a LF
 int STDINOUT::putchar1 (char c, FILE *fp)
 {
-	if (c == '\n') { // \n sends crlf
-		stream_ptr1->write ((char) '\r'); // send C/R
+	if (fp == stdout) {
+		if (c == '\n') { // if linefeed
+			stream_ptr1->write ((char) '\r'); // also send CR
+		}
+		stream_ptr1->write ((char) c);
+		return 0;
+	} else {
+		return _FDEV_ERR;
 	}
-	stream_ptr1->write (c); // send one character to device
-	return 0;
 }
 
-// function that printf and related will use to write a char to stderr
-// auto-add a CR to a LF
+// function that printf and related will use to write
+// a char to stdout and auto-add a CR to a LF
 int STDINOUT::putchar2 (char c, FILE *fp)
 {
-	if (c == '\n') { // \n sends crlf
-		stream_ptr2->write ((char) '\r'); // send C/R
+	if (fp == stderr) {
+		if (c == '\n') { // if linefeed
+			stream_ptr2->write ((char) '\r'); // also send CR
+		}
+		stream_ptr2->write ((char) c);
+		return 0;
+	} else {
+		return _FDEV_ERR;
 	}
-	stream_ptr2->write (c); // send one character to device
-	return 0;
 }
 
 STDINOUT STDIO; // Preinstantiate STDIO object
