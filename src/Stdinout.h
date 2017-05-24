@@ -23,19 +23,18 @@
 #ifndef STD_IN_OUT_H
 #define STD_IN_OUT_H
 
+#include <stdio.h>
 #include <Stream.h>
 
-static Stream *stream_ptr0 = NULL; // stdin stream pointer
-static Stream *stream_ptr1 = NULL; // stdout stream pointer
-static Stream *stream_ptr2 = NULL; // stderr stream pointer
-
 class STDINOUT {
+
 	public:
 		void open (Stream &);
 		void open (Stream &, Stream &);
 		void open (Stream &, Stream &, Stream &);
-		Stream &getStream (FILE *);
 		void close (void);
+		Stream &getStream (FILE *);
+
 	private:
 		static int getchar0 (FILE *); // char read for stdin
 		static int putchar1 (char, FILE *); // char write for stdout
