@@ -24,16 +24,16 @@
 #define STD_IN_OUT_H
 
 #include <stdio.h>
-#include <Stream.h>
+#include "Print.h"
 
 class STDINOUT {
 
 	public:
-		void open (Stream &);
-		void open (Stream &, Stream &);
-		void open (Stream &, Stream &, Stream &);
+		void open (Print &);
+		void open (Print &, Print &);
+		void open (Print &, Print &, Print &);
 		void close (void);
-		Stream &getStream (FILE *);
+		Print &getStream (FILE *);
 
 	private:
 		static int getchar0 (FILE *); // char read for stdin

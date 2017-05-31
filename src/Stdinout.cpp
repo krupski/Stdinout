@@ -20,26 +20,26 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <Stdinout.h>
+#include "Stdinout.h"
 
-static Stream *stream_ptr0 = NULL; // stdin stream pointer
-static Stream *stream_ptr1 = NULL; // stdout stream pointer
-static Stream *stream_ptr2 = NULL; // stderr stream pointer
+static Print *stream_ptr0 = NULL; // stdin stream pointer
+static Print *stream_ptr1 = NULL; // stdout stream pointer
+static Print *stream_ptr2 = NULL; // stderr stream pointer
 
 // connect stdio to all devices
-void STDINOUT::open (Stream &iostr)
+void STDINOUT::open (Print &iostr)
 {
 	open (iostr, iostr, iostr);
 }
 
 // connect stdin to input device, stdout and stderr to output device
-void STDINOUT::open (Stream &inpstr, Stream &outstr)
+void STDINOUT::open (Print &inpstr, Print &outstr)
 {
 	open (inpstr, outstr, outstr);
 }
 
 // connect each stream to it's own device
-void STDINOUT::open (Stream &inpstr, Stream &outstr, Stream &errstr)
+void STDINOUT::open (Print &inpstr, Print &outstr, Print &errstr)
 {
 	close();  // close any that may be open
 
@@ -82,10 +82,10 @@ void STDINOUT::close (void)
 }
 
 // return stream connected to FILE (i.e. stdin, stdout or stderr).
-Stream &STDINOUT::getStream (FILE *fp)
+Print &STDINOUT::getStream (FILE *fp)
 {
 	FILE *f[] = { NULL, stdin, stdout, stderr }; // file pointers
-	Stream *s[] = { NULL, stream_ptr0, stream_ptr1, stream_ptr2 }; // stream pointers
+	Print *s[] = { NULL, stream_ptr0, stream_ptr1, stream_ptr2 }; // stream pointers
 	int8_t x = (sizeof (f) / sizeof (*f)); // pointer count
 
 	while (x--) { // scan through them
