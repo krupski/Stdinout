@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 //  Stdinout.h - connect various character devices to standard streams
-//  Copyright (c) 2014, 2017 Roger A. Krupski <rakrupski@verizon.net>
+//  Copyright (c) 2014, 2018 Roger A. Krupski <rakrupski@verizon.net>
 //
-//  Last update: 07 June 2017
+//  Last update: 09 February 2018
 //
 //  This library is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,29 +23,33 @@
 #ifndef STD_IN_OUT_H
 #define STD_IN_OUT_H
 
-#include <Stream.h>
+#if ARDUINO < 100
+#include <WProgram.h>
+#else
+#include <Arduino.h>
+#endif
 
-static Stream *_stream_ptr0 = NULL; // stdin stream pointer (using Stream)
-static Print  *_stream_ptr1 = NULL; // stdout stream pointer (using Print)
-static Print  *_stream_ptr2 = NULL; // stderr stream pointer (using Print)
+// file pointers
+static FILE *_file_ptr[] = { NULL, NULL, NULL, NULL };
+// stream pointers
+static Print *_stream_ptr[] = { NULL, NULL, NULL, NULL };
+// pointer count (should be 4!)
+static uint8_t ptr_cnt = (sizeof(_file_ptr)/sizeof(*_file_ptr));
 
 class STDINOUT
 {
-	public: // main functions
+	public:
 		void open (Print &);
 		void open (Print &, Print &);
 		void open (Print &, Print &, Print &);
 		void close (void);
+		Print &getStream (int);
 		Print &getStream (FILE *);
-	private: // internal functions
-		#define _array_size(a)(sizeof(a)/sizeof(*a))
+	private:
+		uint8_t x; // generic loop counter
 		static int _getchar0 (FILE *); // char read for stdin
 		static int _putchar1 (char, FILE *); // char write for stdout
 		static int _putchar2 (char, FILE *); // char write for stderr
-	public: // virtual functions
-		virtual size_t write (uint8_t) { return 0; }
-		virtual int available (void) { return 0; }
-		virtual int read (void) { return 0; }
 };
 
 extern STDINOUT STDIO; // Expose STDIO object

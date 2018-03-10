@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 //  Stdinout.cpp - connect various character devices to standard streams
-//  Copyright (c) 2014, 2017 Roger A. Krupski <rakrupski@verizon.net>
+//  Copyright (c) 2014, 2018 Roger A. Krupski <rakrupski@verizon.net>
 //
-//  Last update: 07 June 2017
+//  Last update: 09 February 2018
 //
 //  This library is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,12 +20,12 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <Stdinout.h>
+#include "Stdinout.h"
 
 // connect stdin, stdout and stderr to same device
-void STDINOUT::open (Print &iostream)
+void STDINOUT::open (Print &iostr)
 {
-	open (iostream, iostream, iostream);
+	open (iostr, iostr, iostr);
 }
 
 // connect stdin to input device, stdout and stderr to output device
@@ -39,80 +39,73 @@ void STDINOUT::open (Print &inpstr, Print &outstr, Print &errstr)
 {
 	close();  // close any that may be open
 
-	stdin = fdevopen (NULL, _getchar0);
-	_stream_ptr0 = (Stream *)(&inpstr);
+	// 0 == stdin
+	_file_ptr[0] = fdevopen (NULL, _getchar0);
+	_stream_ptr[0] = &inpstr;
 
-	stdout = fdevopen (_putchar1, NULL);
-	_stream_ptr1 = &outstr;
+	// 1 == stdout
+	_file_ptr[1] = fdevopen (_putchar1, NULL);
+	_stream_ptr[1] = &outstr;
 
-	stderr = fdevopen (_putchar2, NULL);
-	_stream_ptr2 = &errstr;
+	// 2 == stderr
+	_file_ptr[2] = fdevopen (_putchar2, NULL);
+	_stream_ptr[2] = &errstr;
+
+	// 3 == dummy (null)
+	_file_ptr[3] = NULL;
+	_stream_ptr[3] = NULL;
 }
 
-// disconnect stdio from stream(s)
+// disconnect stdio from stream(s) & free memory
 void STDINOUT::close (void)
 {
-	fclose (stdin);
-	stdin = NULL;
-	_stream_ptr0 = NULL;
-
-	fclose (stdout);
-	stdout = NULL;
-	_stream_ptr1 = NULL;
-
-	fclose (stderr);
-	stderr = NULL;
-	_stream_ptr2 = NULL;
+	for (x = 0; x < ptr_cnt; x++) { // gotta do 'em all!
+		fclose (_file_ptr[x]); // close all (frees memory)
+		_file_ptr[x] = NULL; // invalidate pointer
+		_stream_ptr[x] = NULL; // invalidate stream
+	}
 }
 
-// return stream connected to FILE (i.e. stdin, stdout or stderr).
+// return stream connected to FILE number (0, 1, or 2)
+Print &STDINOUT::getStream (int _file_num)
+{
+	if ((_file_num < 0) || (_file_num > 2)) { // only std in/out/err allowed
+		return (*_stream_ptr[3]); // illegal - return null
+	} else {
+		return *_stream_ptr[_file_num]; // return it's pointer
+	}
+}
+
+// return stream connected to FILE pointer (stdin, stdout or stderr)
 Print &STDINOUT::getStream (FILE *fp)
 {
-	FILE *f[] = { NULL, stdin, stdout, stderr }; // file pointers
-	Print *s[] = { NULL, _stream_ptr0, _stream_ptr1, _stream_ptr2 }; // stream pointers
-	int8_t x = _array_size(f); // pointer count
-
-	while (x--) { // scan through them
-		if (f[x] == fp) { // if stdio matches...
-			break; // ...return it's pointer
+	for (x = 0; x < ptr_cnt; x++) { // scan through them
+		if (_file_ptr[x] == fp) { // if ptr matches...
+			return *_stream_ptr[x]; // ...return it's pointer
 		}
 	}
-
-	if (x < 0) { // x == -1 if search fails
-		x = 0; // found nothing, return s[0] (NULL)
-	}
-
-	return *s[x]; // if the loop finishes, return null
 }
 
-// Function that fgetc, fread, scanf and related
-// will use to read a char from stdin
+// read a char from stdin
 int STDINOUT::_getchar0 (FILE *fp)
 {
-	while (! (_stream_ptr0->available()));  // wait until a character is available...
-	return (_stream_ptr0->read());  // ...then grab it and return
+	// 0 == stdin
+	while (! (_stream_ptr[0]->available()));
+	return (size_t)(_stream_ptr[0]->read());
 }
 
-// function that printf and related will use to write
-// a char to stdout and auto-add a CR to a LF
+// write a char to stdout
 int STDINOUT::_putchar1 (char c, FILE *fp)
 {
-	if (c == '\n') { // if linefeed
-		_stream_ptr1->write ((char) '\r'); // also send CR
-	}
-	_stream_ptr1->write ((char) c);
-	return 0;
+	// 1 == stdout
+	return (size_t)(_stream_ptr[1]->print ((char) c));
 }
 
-// function that printf and related will use to write
-// a char to stderr and auto-add a CR to a LF
+// write a char to stderr
 int STDINOUT::_putchar2 (char c, FILE *fp)
 {
-	if (c == '\n') { // if linefeed
-		_stream_ptr2->write ((char) '\r'); // also send CR
-	}
-	_stream_ptr2->write ((char) c);
-	return 0;
+	// 2 == stderr
+	return (size_t)(_stream_ptr[2]->print ((char) c));
 }
 
 STDINOUT STDIO; // Preinstantiate STDIO object
