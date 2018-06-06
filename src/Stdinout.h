@@ -29,13 +29,6 @@
 #include <Arduino.h>
 #endif
 
-// file pointers
-static FILE *_file_ptr[] = { NULL, NULL, NULL, NULL };
-// stream pointers
-static Print *_stream_ptr[] = { NULL, NULL, NULL, NULL };
-// pointer count (should be 4!)
-static uint8_t ptr_cnt = (sizeof(_file_ptr)/sizeof(*_file_ptr));
-
 class STDINOUT
 {
 	public:

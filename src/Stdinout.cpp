@@ -22,6 +22,13 @@
 
 #include "Stdinout.h"
 
+// file pointers
+FILE *_file_ptr[3];
+// stream pointers
+Print *_stream_ptr[3];
+// NULL error pointers
+Print *_null_stream;
+
 // connect stdin, stdout and stderr to same device
 void STDINOUT::open (Print &iostr)
 {
@@ -51,26 +58,25 @@ void STDINOUT::open (Print &inpstr, Print &outstr, Print &errstr)
 	_file_ptr[2] = fdevopen (_putchar2, NULL);
 	_stream_ptr[2] = &errstr;
 
-	// 3 == dummy (null)
-	_file_ptr[3] = NULL;
-	_stream_ptr[3] = NULL;
+	_null_stream = NULL;
 }
 
 // disconnect stdio from stream(s) & free memory
 void STDINOUT::close (void)
 {
-	for (x = 0; x < ptr_cnt; x++) { // gotta do 'em all!
+	for (x = 0; x < 3; x++) { // do stdin, stdout & stderr
 		fclose (_file_ptr[x]); // close all (frees memory)
 		_file_ptr[x] = NULL; // invalidate pointer
 		_stream_ptr[x] = NULL; // invalidate stream
 	}
+	_null_stream = NULL;
 }
 
-// return stream connected to FILE number (0, 1, or 2)
+// return stream connected to FILE number (0, 1 or 2)
 Print &STDINOUT::getStream (int _file_num)
 {
 	if ((_file_num < 0) || (_file_num > 2)) { // only std in/out/err allowed
-		return (*_stream_ptr[3]); // illegal - return null
+		return *_null_stream; // illegal - return null
 	} else {
 		return *_stream_ptr[_file_num]; // return it's pointer
 	}
@@ -79,11 +85,12 @@ Print &STDINOUT::getStream (int _file_num)
 // return stream connected to FILE pointer (stdin, stdout or stderr)
 Print &STDINOUT::getStream (FILE *fp)
 {
-	for (x = 0; x < ptr_cnt; x++) { // scan through them
+	for (x = 0; x < 3; x++) { // scan through them
 		if (_file_ptr[x] == fp) { // if ptr matches...
-			return *_stream_ptr[x]; // ...return it's pointer
+			return *_stream_ptr[x]; // ...return it's stream pointer
 		}
 	}
+	return *_null_stream; // fell through == error
 }
 
 // read a char from stdin
@@ -91,21 +98,21 @@ int STDINOUT::_getchar0 (FILE *fp)
 {
 	// 0 == stdin
 	while (! (_stream_ptr[0]->available()));
-	return (size_t)(_stream_ptr[0]->read());
+	return _stream_ptr[0]->read();
 }
 
 // write a char to stdout
 int STDINOUT::_putchar1 (char c, FILE *fp)
 {
 	// 1 == stdout
-	return (size_t)(_stream_ptr[1]->print ((char) c));
+	return _stream_ptr[1]->print ((char) c);
 }
 
 // write a char to stderr
 int STDINOUT::_putchar2 (char c, FILE *fp)
 {
 	// 2 == stderr
-	return (size_t)(_stream_ptr[2]->print ((char) c));
+	return _stream_ptr[2]->print ((char) c);
 }
 
 STDINOUT STDIO; // Preinstantiate STDIO object
