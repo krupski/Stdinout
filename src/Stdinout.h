@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 //  Stdinout.h - connect various character devices to standard streams
-//  Copyright (c) 2014, 2018 Roger A. Krupski <rakrupski@verizon.net>
+//  Copyright (c) 2014, 2019 Roger A. Krupski <rakrupski@verizon.net>
 //
-//  Last update: 09 February 2018
+//  Last update: 6 May 2019
 //
 //  This library is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,11 +23,12 @@
 #ifndef STD_IN_OUT_H
 #define STD_IN_OUT_H
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
-#include <Arduino.h>
-#endif
+#include <stdio.h>
+#include "Print.h"
+
+static Print *_stream_ptr0; // stdin
+static Print *_stream_ptr1; // stdout
+static Print *_stream_ptr2; // stderr
 
 class STDINOUT
 {
@@ -36,10 +37,7 @@ class STDINOUT
 		void open (Print &, Print &);
 		void open (Print &, Print &, Print &);
 		void close (void);
-		Print &getStream (int);
-		Print &getStream (FILE *);
 	private:
-		uint8_t x; // generic loop counter
 		static int _getchar0 (FILE *); // char read for stdin
 		static int _putchar1 (char, FILE *); // char write for stdout
 		static int _putchar2 (char, FILE *); // char write for stderr
