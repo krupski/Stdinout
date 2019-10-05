@@ -68,23 +68,23 @@ void STDINOUT::close (void)
 // read a char from stdin
 int STDINOUT::_getchar0 (FILE *fp)
 {
-	// 0 == stdin
-	while (! _stream_ptr0->available());
+	// 0: stdin
+	while (! (_stream_ptr0->available()));
 	return _stream_ptr0->read();
 }
 
 // write a char to stdout
 int STDINOUT::_putchar1 (char c, FILE *fp)
 {
-	// 1 == stdout
-	return _stream_ptr1->print ((char) c);
+	// 1: stdout
+	return _stream_ptr1->print (c) == 0;
 }
 
 // write a char to stderr
 int STDINOUT::_putchar2 (char c, FILE *fp)
 {
-	// 2 == stderr
-	return _stream_ptr2->print ((char) c);
+	// 2: stderr
+	return _stream_ptr2->print (c) == 0;
 }
 
 STDINOUT STDIO; // Preinstantiate STDIO object
