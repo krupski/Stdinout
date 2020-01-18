@@ -3,7 +3,7 @@
 //  Stdinout.h - connect various character devices to standard streams
 //  Copyright (c) 2014, 2019 Roger A. Krupski <rakrupski@verizon.net>
 //
-//  Last update: 6 May 2019
+//  Last update: 6 November 2019
 //
 //  This library is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef STD_IN_OUT_H
-#define STD_IN_OUT_H
+#ifndef STDINOUT_H
+#define STDINOUT_H
 
 #include <stdio.h>
 #include "Print.h"
@@ -30,12 +30,11 @@ static Print *_stream_ptr0; // stdin
 static Print *_stream_ptr1; // stdout
 static Print *_stream_ptr2; // stderr
 
-class STDINOUT
-{
+class STDINOUT {
 	public:
-		void open (Print &);
-		void open (Print &, Print &);
-		void open (Print &, Print &, Print &);
+		void open (Print &); // open all streams to same device
+		void open (Print &, Print &); // input to stdin, output to stdout & stderr
+		void open (Print &, Print &, Print &); // each device to it's own stream
 		void close (void);
 	private:
 		static int _getchar0 (FILE *); // char read for stdin
@@ -45,6 +44,6 @@ class STDINOUT
 
 extern STDINOUT STDIO; // Expose STDIO object
 
-#endif // #ifndef STD_IN_OUT_H
+#endif // #ifndef STDINOUT_H
 
 // end of Stdinout.h

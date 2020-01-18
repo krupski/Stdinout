@@ -3,7 +3,7 @@
 //  Stdinout.cpp - connect various character devices to standard streams
 //  Copyright (c) 2014, 2019 Roger A. Krupski <rakrupski@verizon.net>
 //
-//  Last update: 6 May 2019
+//  Last update: 6 November 2019
 //
 //  This library is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -29,23 +29,23 @@ void STDINOUT::open (Print &iostr)
 }
 
 // connect stdin to input device, stdout and stderr to output device
-void STDINOUT::open (Print &inpstr, Print &outstr)
+void STDINOUT::open (Print &instr, Print &outstr)
 {
-	open (inpstr, outstr, outstr);
+	open (instr, outstr, outstr);
 }
 
 // connect each stream to it's own device
-void STDINOUT::open (Print &inpstr, Print &outstr, Print &errstr)
+void STDINOUT::open (Print &instr, Print &outstr, Print &errstr)
 {
 	close();
 
-	stdin = fdevopen (NULL, _getchar0); // setup stdin
-	_stream_ptr0 = &inpstr;
+	stdin = fdevopen (0, _getchar0); // setup stdin
+	_stream_ptr0 = &instr;
 
-	stdout = fdevopen (_putchar1, NULL); // setup stdout
+	stdout = fdevopen (_putchar1, 0); // setup stdout
 	_stream_ptr1 = &outstr;
 
-	stderr = fdevopen (_putchar2, NULL); // setup stderr
+	stderr = fdevopen (_putchar2, 0); // setup stderr
 	_stream_ptr2 = &errstr;
 }
 
@@ -53,16 +53,16 @@ void STDINOUT::open (Print &inpstr, Print &outstr, Print &errstr)
 void STDINOUT::close (void)
 {
 	fclose (stdin);
-	stdin = NULL;
-	_stream_ptr0 = NULL;
+	stdin = (FILE *)(0);
+	_stream_ptr0 = (Print *)(0);
 
 	fclose (stdout);
-	stdout = NULL;
-	_stream_ptr1 = NULL;
+	stdout = (FILE *)(0);
+	_stream_ptr1 = (Print *)(0);
 
 	fclose (stderr);
-	stderr = NULL;
-	_stream_ptr2 = NULL;
+	stderr = (FILE *)(0);
+	_stream_ptr2 = (Print *)(0);
 }
 
 // read a char from stdin
