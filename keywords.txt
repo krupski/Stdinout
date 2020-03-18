@@ -8,9 +8,9 @@ Stdinout	KEYWORD1
 # Methods and Functions
 #######################################
 
-open
-close
-getStream
-STDIO
+open	KEYWORD2
+close	KEYWORD2
+getStream	KEYWORD2
+STDIO	KEYWORD2
 
 #######################################
